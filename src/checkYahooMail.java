@@ -16,6 +16,7 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
@@ -50,14 +51,29 @@ public class checkYahooMail {
 	    System.out.println("CODIFICACION: "+ page.getPageEncoding());	    
 	    /* POR PAGE
 	     */
-	    ((HtmlSelect) page.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1")).getOptionByValue("VLL").setSelected(true); 
-	    ((HtmlSelect) page.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1")).getOptionByValue("BGY").setSelected(true);
+	    //((HtmlSelect) page.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1")).getOptionByValue("VLL").setSelected(true); 
+	    //((HtmlSelect) page.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1")).getOptionByValue("BGY").setSelected(true);
+	    
+	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1", "VLL");
+	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1", "BGY");
+
+	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDay1", "01");
+	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketMonth1", "2010-04");
+	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDay2", "08");
+	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketMonth2", "2010-04");
+
+	    
+	    setCheckboxValue(page, "AvailabilitySearchInputFRSearchView_DropDownListSearchBy", true);
+	    
+	    //Print
 	    HtmlForm form = (HtmlForm) page.getElementById("SkySales");
 	    System.out.println(((HtmlSelect) form.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1")).asText());
 	    System.out.println(((HtmlSelect) form.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1")).asText());
 	    System.out.println(((HtmlSubmitInput) form.getElementById("AvailabilitySearchInputFRSearchView_ButtonSubmit")).asText());
 	    
+	    //Submit
 	    page= (HtmlPage) ((HtmlSubmitInput) page.getElementById("AvailabilitySearchInputFRSearchView_ButtonSubmit")).click();
+	    
 	    
 	    /* POR JAVASCRIPT
 	    page.executeJavaScript("document.getElementById('AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1').value= 'VLL';" +
@@ -109,8 +125,17 @@ public class checkYahooMail {
 	    String ruta= "C:\\paginaHTML_"+cal.get(Calendar.HOUR_OF_DAY)+"."+cal.get(Calendar.MINUTE)+"."+cal.get(Calendar.SECOND)+".html";
 	    File f= new File(ruta);
 	    page.save(f);	    
-	    //new LeerArchivoServidor("file://" + ruta);
+	    new LeerArchivoServidor("file://" + ruta);
 	    //System.out.println(dataTable.asXml());
 
 	}
+
+	private static void setComboValue(HtmlPage pagina, String combo, String value) {
+		((HtmlSelect) pagina.getElementById(combo)).getOptionByValue(value).setSelected(true);
+	}
+	
+	private static void setCheckboxValue(HtmlPage pagina, String checkbox, boolean value) {
+		((HtmlCheckBoxInput) pagina.getElementById(checkbox)).setChecked(value);
+	}
+	
 }
