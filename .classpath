@@ -9,7 +9,7 @@
 	<classpathentry kind="lib" path="lib/commons-lang-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/cssparser-0.9.5.jar"/>
-	<classpathentry kind="lib" path="lib/htmlunit-2.7.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.7.jar" sourcepath="lib/htmlunit-2.7-src.zip"/>
 	<classpathentry kind="lib" path="lib/htmlunit-core-js-2.7.jar"/>
 	<classpathentry kind="lib" path="lib/nekohtml-1.9.14.jar"/>
 	<classpathentry kind="lib" path="lib/sac-1.3.jar"/>

@@ -1,11 +1,15 @@
 
 
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.w3c.dom.html.HTMLElement;
 
@@ -22,6 +26,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTable;
@@ -54,6 +59,8 @@ public class checkYahooMail {
 	    //((HtmlSelect) page.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1")).getOptionByValue("VLL").setSelected(true); 
 	    //((HtmlSelect) page.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1")).getOptionByValue("BGY").setSelected(true);
 	    
+	    page= setRadioCheck(page, "AvailabilitySearchInputFRSearchView_OneWay", true);
+	    
 	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1", "VLL");
 	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1", "BGY");
 
@@ -63,7 +70,7 @@ public class checkYahooMail {
 	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketMonth2", "2010-04");
 
 	    
-	    setCheckboxValue(page, "AvailabilitySearchInputFRSearchView_DropDownListSearchBy", true);
+	    setCheckboxCheck(page, "AvailabilitySearchInputFRSearchView_DropDownListSearchBy", true);
 	    
 	    //Print
 	    HtmlForm form = (HtmlForm) page.getElementById("SkySales");
@@ -118,15 +125,21 @@ public class checkYahooMail {
 	    }	    
 	    // Print the newMessageCount to screen
 	    System.out.println("newMessageCount = " + newMessageCount);
+	    System.out.println(dataTable.asXml());
  */
 
-	    //System.out.println("\n" + page.asXml());
+	    //System.out.println("\n" + page.asText());
+	    
+	    System.out.println(getPrecioFromHTML(page.asText()));
+	    
 	    Calendar cal = Calendar.getInstance();
 	    String ruta= "C:\\paginaHTML_"+cal.get(Calendar.HOUR_OF_DAY)+"."+cal.get(Calendar.MINUTE)+"."+cal.get(Calendar.SECOND)+".html";
+	    stringToFile(ruta+".txt", page.asText());
 	    File f= new File(ruta);
-	    page.save(f);	    
-	    new LeerArchivoServidor("file://" + ruta);
-	    //System.out.println(dataTable.asXml());
+	    page.save(f);
+	    System.out.println(getPrecioFromHTML(page.asXml()));
+	    
+	    //new LeerArchivoServidor("file://" + ruta);
 
 	}
 
@@ -134,8 +147,67 @@ public class checkYahooMail {
 		((HtmlSelect) pagina.getElementById(combo)).getOptionByValue(value).setSelected(true);
 	}
 	
-	private static void setCheckboxValue(HtmlPage pagina, String checkbox, boolean value) {
+	private static void setCheckboxCheck(HtmlPage pagina, String checkbox, boolean value) {
 		((HtmlCheckBoxInput) pagina.getElementById(checkbox)).setChecked(value);
+	}
+	
+	private static HtmlPage setRadioCheck(HtmlPage pagina, String radio, boolean value) {
+		return (HtmlPage) ((HtmlRadioButtonInput) pagina.getElementById(radio)).setChecked(value);
+	}
+	
+	private static void stringToFile(String ruta, String texto) {
+		try {
+			BufferedWriter out = new BufferedWriter(new FileWriter(ruta));
+			out.write(texto);
+			out.close();
+		}
+		catch (IOException e){
+			System.out.println("Exception " + e);
+		}
+		
+	}
+	
+	private static String getPrecioFromHTML(String html)
+	{
+		
+		//Pattern pat= Pattern.compile("Importe total del vuelo.*[0-9]*(,|\\.)[0-9]*(| )(EUR|L|€|GBP|SEK|NOK|LTL|LVL|PLN|CZK|HUF|DKK)");
+		//Precio total: 	50,38	EUR
+		Pattern pat= Pattern.compile("Precio total:.*[0-9]*(,|\\.)[0-9]*.*(EUR|L|€|GBP|SEK|NOK|LTL|LVL|PLN|CZK|HUF|DKK)");
+		Matcher m= pat.matcher(html.replaceAll("[\r\n]", "")); //Le quitamos los retornos de carro, para que realice bien la busqueda
+		
+		String precio="";
+		//Buscamos cadenas coincidentes con la RegEx
+		int contador= 0;
+		while (m.find()){
+			//Si hay siguiente patron encontrado
+			contador++;
+			//System.out.println(m.group());
+			//Pattern pat2= Pattern.compile("[0-9]*(,|\\.)[0-9]*(| )(EUR|L|€|GBP|SEK|NOK|LTL|LVL|PLN|CZK|HUF|DKK)");
+			Pattern pat2= Pattern.compile("[0-9]*(,|\\.)[0-9]");
+			Matcher m2= pat2.matcher(m.group());
+			while (m2.find()) {
+				precio= m2.group();
+				System.out.println(precio);
+				//TODO db (pero bien...) aquí
+				//Date Dfecha = fecha.getTime();
+				//DB.setDatosVuelo(Origen, Destino, precio, fecha );
+				
+			}
+		}
+		
+		//Informamos de errores
+		if(contador==0){
+			System.out.println("ERROR: no se ha encontrado importe alguno en la página.");
+			//ERROR_NO_IMPORTE_ENCONTRADO;
+		}else if(contador!=1){
+			System.out.println("ERROR: se han encontrado más importes ("+m.groupCount()+") de los esperados en la página.");
+			//ERROR_NO_IMPORTE_ENCONTRADO;
+		}else{
+			System.out.println("Precio ENCONTRADO: "+ precio);
+		}
+		
+		return precio;
+		
 	}
 	
 }
