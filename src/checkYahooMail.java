@@ -1,8 +1,10 @@
 
 
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.List;
 
 import org.w3c.dom.html.HTMLElement;
@@ -11,11 +13,20 @@ import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.RefreshHandler;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlInput;
+import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSelect;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTable;
 import com.gargoylesoftware.htmlunit.html.HtmlTableRow;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLInputElement;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLSelectElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableElement;
 
 public class checkYahooMail {
@@ -23,7 +34,8 @@ public class checkYahooMail {
 	public static void main(String[] args) throws Exception {
 
 		// Create and initialize WebClient object
-	    WebClient webClient = new WebClient(BrowserVersion.FIREFOX_3);
+		WebClient webClient = new WebClient(BrowserVersion.FIREFOX_3);
+		webClient.setJavaScriptEnabled(true);
 	    webClient.setThrowExceptionOnScriptError(false);
 	    webClient.setRefreshHandler(new RefreshHandler() {
 			public void handleRefresh(Page page, URL url, int arg) throws IOException {
@@ -31,19 +43,47 @@ public class checkYahooMail {
 			}
 
 	    });
-
+	    
 	    // visit Yahoo Mail login page and get the Form object
 	    //HtmlPage page = (HtmlPage) webClient.getPage("https://login.yahoo.com/config/login_verify2?.intl=us&.src=ym");
 	    HtmlPage page = (HtmlPage) webClient.getPage("http://www.bookryanair.com/SkySales/FRSearch.aspx?culture=es-es&lc=es-es");
+	    System.out.println("CODIFICACION: "+ page.getPageEncoding());	    
+	    /* POR PAGE
+	     */
+	    ((HtmlSelect) page.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1")).getOptionByValue("VLL").setSelected(true); 
+	    ((HtmlSelect) page.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1")).getOptionByValue("BGY").setSelected(true);
+	    HtmlForm form = (HtmlForm) page.getElementById("SkySales");
+	    System.out.println(((HtmlSelect) form.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1")).asText());
+	    System.out.println(((HtmlSelect) form.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1")).asText());
+	    System.out.println(((HtmlSubmitInput) form.getElementById("AvailabilitySearchInputFRSearchView_ButtonSubmit")).asText());
+	    
+	    page= (HtmlPage) ((HtmlSubmitInput) page.getElementById("AvailabilitySearchInputFRSearchView_ButtonSubmit")).click();
+	    
+	    /* POR JAVASCRIPT
+	    page.executeJavaScript("document.getElementById('AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1').value= 'VLL';" +
+	    						"document.getElementById('AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1').value= 'BGY';" +
+	    						"document.getElementById('AvailabilitySearchInputFRSearchView_ButtonSubmit').click();"
+	    						);
+	     */
+	     
+	    
+	    /*
+	    HtmlForm form = (HtmlForm) page.getElementById("SkySales");
+	    System.out.println(((HtmlSelect) form.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1")).asText());
+	    System.out.println(((HtmlSubmitInput) form.getElementById("AvailabilitySearchInputFRSearchView_ButtonSubmit")).asText());
+	    //((HtmlSelect) form.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1")).setValueAttribute("VLL");
+	    //((HtmlSelect) form.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1")).setValueAttribute("BGY");
+	    page = (HtmlPage) form.getInputByName("AvailabilitySearchInputFRSearchView_ButtonSubmit").click();
+	    */
+	    /*
 	    HtmlForm form = page.getFormByName("login_form");
-
+	    
 	    // Enter login and passwd
 	    form.getInputByName("login").setValueAttribute("@@@@");
 	    form.getInputByName("passwd").setValueAttribute("@@@@");
 
 	    // Click "Sign In" button/link
 	    page = (HtmlPage) form.getInputByValue("Sign In").click();
-/*
 	    // Click "Inbox" link
 	    HtmlAnchor anchor = (HtmlAnchor) page.getHtmlElementById("WelcomeInboxFolderLink");
 	    page = (HtmlPage) anchor.click();
@@ -64,7 +104,12 @@ public class checkYahooMail {
 	    System.out.println("newMessageCount = " + newMessageCount);
  */
 
-	    System.out.println(page.asXml());	   	     	    
+	    //System.out.println("\n" + page.asXml());
+	    Calendar cal = Calendar.getInstance();
+	    String ruta= "C:\\paginaHTML_"+cal.get(Calendar.HOUR_OF_DAY)+"."+cal.get(Calendar.MINUTE)+"."+cal.get(Calendar.SECOND)+".html";
+	    File f= new File(ruta);
+	    page.save(f);	    
+	    //new LeerArchivoServidor("file://" + ruta);
 	    //System.out.println(dataTable.asXml());
 
 	}
