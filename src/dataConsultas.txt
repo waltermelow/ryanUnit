@@ -1,0 +1,30 @@
+#Alicante|Basel|2010-08-01|2010-12-30
+#Alicante|Estolcolmo (Skavsta)|2010-08-01|2010-12-30
+#Alicante|Gotenburgo|2010-08-01|2010-12-30
+#Alicante|Oslo (Torp)|2010-08-01|2010-12-30
+#Alicante|Rygge-Moss|2010-08-01|2010-12-30
+
+#Bruselas (Charleroi)|Valladolid|2010-08-01|2010-12-30
+#Valladolid|Bruselas (Charleroi)|2010-08-01|2010-12-30
+#Stockholm (Vasteras)|Girona (Barcelona)|2010-08-01|2010-12-30
+#Rygge-Moss|Madrid|2010-08-01|2010-12-30
+#Rygge-Moss|Girona (Barcelona)|2010-08-01|2010-12-30
+#Rygge-Moss|Alicante|2010-08-01|2010-12-30
+#Oslo (Torp)|Girona (Barcelona)|2010-08-01|2010-12-30
+#Oslo (Torp)|Alicante|2010-08-01|2010-12-30
+#Madrid|Rygge-Moss|2010-08-01|2010-12-30
+#Gotenburgo|Girona (Barcelona)|2010-08-01|2010-12-30
+#Gotenburgo|Alicante|2010-08-01|2010-12-30
+#Girona (Barcelona)|Stockholm (Vasteras)|2010-08-01|2010-12-30
+#Girona (Barcelona)|Rygge-Moss|2010-08-01|2010-12-30
+#Girona (Barcelona)|Oslo (Torp)|2010-08-01|2010-12-30
+#Girona (Barcelona)|Gotenburgo|2010-08-01|2010-12-30
+#Girona (Barcelona)|Estolcolmo (Skavsta)|2010-08-01|2010-12-30
+#Estolcolmo (Skavsta)|Alicante|2010-08-01|2010-12-30
+#Bruselas (Charleroi)|Valladolid|2010-08-01|2010-12-30
+#Basel|Alicante|2010-08-01|2010-12-30
+
+Valladolid|Milán (Bergamo)|2010-03-30|2010-04-30
+Milán (Bergamo)|Valladolid|2010-03-30|2010-04-30
+
+

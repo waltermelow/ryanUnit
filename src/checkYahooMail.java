@@ -8,11 +8,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.w3c.dom.html.HTMLElement;
-
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
@@ -39,9 +39,21 @@ import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableElement;
 
 public class checkYahooMail {
 	
-	
+
 	public static void main(String[] args) throws Exception {
 		
+		final String rutaActual= System.getProperty("user.dir")+"\\src\\";
+		final String nomFichConsultas= "dataConsultas.txt";
+		TreeSet<Vuelo> vuelos;
+		
+		System.out.println(rutaActual);
+		System.out.println("-- Empieza lectura fichero --");
+		vuelos = UtilsIO.leerFicheroDatosConsultaVuelos(rutaActual + nomFichConsultas);
+		for (Vuelo v : vuelos) {
+			System.out.println(v.toString());
+		}
+		System.out.println("-- Termina lectura fichero --");
+		/*
 		Thread t1= new Thread() {
 			public void run() {
 				try {
@@ -53,18 +65,43 @@ public class checkYahooMail {
 		};
 		t1.start();
 		Thread t2= new Thread() {
-		      public void run() {
-		        try {
-		        	new checkYahooMail("VLL", "BGY", "04", "2010-04");
-		        }catch (Exception e) {
-		          e.printStackTrace();
-		        }
-		      }
-		 };
-		 t2.start();
+			public void run() {
+				try {
+					new checkYahooMail("VLL", "BGY", "04", "2010-04");
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		t2.start();*/
+		
+		lanzarCheckThreaded("VLL", "BGY", "03", "2010-04");
+		lanzarCheckThreaded("VLL", "BGY", "04", "2010-04");
+		lanzarCheckThreaded("VLL", "BGY", "05", "2010-04");
 		
 	}
 
+	private static String lanzarCheckThreaded(String origen, String destino, String dia, String mesAno) throws Exception {
+		final String o= origen;
+		final String d= destino;
+		final String di= dia;
+		final String ma= mesAno;
+		final String retorno= "";
+		Thread t1= new Thread() {
+			public void run() {
+				checkYahooMail cym= null;
+				try {
+					cym = new checkYahooMail(o, d, di, ma);
+					cym.get
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		t1.start();
+		
+		return retorno;
+	}
 	
 	
 	
@@ -185,7 +222,7 @@ public class checkYahooMail {
 	    
 	    Calendar cal = Calendar.getInstance();
 	    String ruta= "C:\\paginaHTML_"+cal.get(Calendar.HOUR_OF_DAY)+"."+cal.get(Calendar.MINUTE)+"."+cal.get(Calendar.SECOND)+".html";
-	    stringToFile(ruta+".txt", page.asText());
+	    UtilsIO.stringToFile(ruta+".txt", page.asText(), false);
 	    File f= new File(ruta);
 	    page.save(f);
 	    
@@ -197,6 +234,7 @@ public class checkYahooMail {
 			System.out.println( e );
 		}
 		System.out.println(precio);
+		return precio;
 	    
 	    //new LeerArchivoServidor("file://" + ruta);
 
@@ -214,17 +252,6 @@ public class checkYahooMail {
 		return (HtmlPage) ((HtmlRadioButtonInput) pagina.getElementById(radio)).setChecked(value);
 	}
 	
-	private static void stringToFile(String ruta, String texto) {
-		try {
-			BufferedWriter out = new BufferedWriter(new FileWriter(ruta));
-			out.write(texto);
-			out.close();
-		}
-		catch (IOException e){
-			System.out.println("Exception " + e);
-		}
-		
-	}
 	
 	private static String getPrecioFromHtml(String html) throws ImporteNoEncontradoException, NoVueloException
 	{
@@ -283,6 +310,9 @@ public class checkYahooMail {
 		return precio;
 		
 	}
+
+	
+
 	
 }
 
