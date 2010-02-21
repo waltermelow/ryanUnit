@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import org.w3c.dom.html.HTMLElement;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.RefreshHandler;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -42,6 +43,9 @@ public class checkYahooMail {
 		// Create and initialize WebClient object
 		WebClient webClient = new WebClient(BrowserVersion.FIREFOX_3);
 		webClient.setJavaScriptEnabled(true);
+		
+		webClient.setAjaxController(new NicelyResynchronizingAjaxController());
+		
 	    webClient.setThrowExceptionOnScriptError(false);
 	    webClient.setRefreshHandler(new RefreshHandler() {
 			public void handleRefresh(Page page, URL url, int arg) throws IOException {
@@ -58,19 +62,28 @@ public class checkYahooMail {
 	     */
 	    //((HtmlSelect) page.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1")).getOptionByValue("VLL").setSelected(true); 
 	    //((HtmlSelect) page.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1")).getOptionByValue("BGY").setSelected(true);
+
+	    System.out.println("\n\n\n\n\n");
+	    System.out.println(page.executeJavaScript("" +
+	    		"var aeropuertoAcomprobar= 'VLL';var total='';" +
+	    		"for(var clave in Stations){" +
+	    		"	/*if(clave == aeropuertoAcomprobar)*/ total+= Stations[clave].name + '<|>' + Stations[clave].code + '<|>' + Stations[clave].mkts + '\\n';" +
+	    		"} total;" ).getJavaScriptResult()  );
+	    System.out.println("\n\n\n\n\n");
+	    
 	    
 	    page= setRadioCheck(page, "AvailabilitySearchInputFRSearchView_OneWay", true);
 	    
 	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1", "VLL");
 	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1", "BGY");
 
-	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDay1", "01");
+	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDay1", "02");
 	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketMonth1", "2010-04");
 	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDay2", "08");
 	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketMonth2", "2010-04");
 
 	    
-	    setCheckboxCheck(page, "AvailabilitySearchInputFRSearchView_DropDownListSearchBy", true);
+	    setCheckboxCheck(page, "AvailabilitySearchInputFRSearchView_DropDownListSearchBy", false);
 	    
 	    //Print
 	    HtmlForm form = (HtmlForm) page.getElementById("SkySales");
@@ -130,14 +143,30 @@ public class checkYahooMail {
 
 	    //System.out.println("\n" + page.asText());
 	    
-	    System.out.println(getPrecioFromHTML(page.asText()));
+	    String precio= "";
+	    try {
+	    	precio= getPrecioFromHTML(page.asText());
+		} catch (ImporteNoEncontradoException e) {
+			System.out.println( e );
+		} catch (NoVueloException e) {
+			System.out.println( e );
+		}
+		System.out.println(precio);
 	    
 	    Calendar cal = Calendar.getInstance();
 	    String ruta= "C:\\paginaHTML_"+cal.get(Calendar.HOUR_OF_DAY)+"."+cal.get(Calendar.MINUTE)+"."+cal.get(Calendar.SECOND)+".html";
 	    stringToFile(ruta+".txt", page.asText());
 	    File f= new File(ruta);
 	    page.save(f);
-	    System.out.println(getPrecioFromHTML(page.asXml()));
+	    
+	    try {
+	    	precio= getPrecioFromHTML(page.asText());
+		} catch (ImporteNoEncontradoException e) {
+			System.out.println( e );
+		} catch (NoVueloException e) {
+			System.out.println( e );
+		}
+		System.out.println(precio);
 	    
 	    //new LeerArchivoServidor("file://" + ruta);
 
@@ -167,43 +196,58 @@ public class checkYahooMail {
 		
 	}
 	
-	private static String getPrecioFromHTML(String html)
+	private static String getPrecioFromHTML(String html) throws ImporteNoEncontradoException, NoVueloException
 	{
+		
+		Pattern patVuelo= Pattern.compile("(No hay vuelos|there are no available flights)");
+		Matcher mVuelo= patVuelo.matcher(html.replaceAll("[\r\n]", "")); //Le quitamos los retornos de carro, para que realice bien la busqueda
+		if(mVuelo.find()){
+			throw new NoVueloException();
+		}
+		
 		
 		//Pattern pat= Pattern.compile("Importe total del vuelo.*[0-9]*(,|\\.)[0-9]*(| )(EUR|L|€|GBP|SEK|NOK|LTL|LVL|PLN|CZK|HUF|DKK)");
 		//Precio total: 	50,38	EUR
 		Pattern pat= Pattern.compile("Precio total:.*[0-9]*(,|\\.)[0-9]*.*(EUR|L|€|GBP|SEK|NOK|LTL|LVL|PLN|CZK|HUF|DKK)");
-		Matcher m= pat.matcher(html.replaceAll("[\r\n]", "")); //Le quitamos los retornos de carro, para que realice bien la busqueda
+		//Matcher m= pat.matcher(html.replaceAll("[\r\n]", "")); //Le quitamos los retornos de carro, para que realice bien la busqueda
+		Matcher m= pat.matcher(html);
 		
 		String precio="";
 		//Buscamos cadenas coincidentes con la RegEx
 		int contador= 0;
 		while (m.find()){
+			String primerRes = m.group();
+			//System.out.println("Primer bucle: "+ primerRes);
 			//Si hay siguiente patron encontrado
 			contador++;
-			//System.out.println(m.group());
 			//Pattern pat2= Pattern.compile("[0-9]*(,|\\.)[0-9]*(| )(EUR|L|€|GBP|SEK|NOK|LTL|LVL|PLN|CZK|HUF|DKK)");
-			Pattern pat2= Pattern.compile("[0-9]*(,|\\.)[0-9]");
-			Matcher m2= pat2.matcher(m.group());
+			Pattern pat2= Pattern.compile("[0-9]*(,|\\.)[0-9]*");
+			Matcher m2= pat2.matcher(primerRes);
 			while (m2.find()) {
+				contador++;
 				precio= m2.group();
-				System.out.println(precio);
+				//System.out.println("Segund bucle (precio): "+ precio);
 				//TODO db (pero bien...) aquí
 				//Date Dfecha = fecha.getTime();
 				//DB.setDatosVuelo(Origen, Destino, precio, fecha );
 				
 			}
 		}
+		System.out.println("");
 		
 		//Informamos de errores
+		/*
 		if(contador==0){
-			System.out.println("ERROR: no se ha encontrado importe alguno en la página.");
+			//System.out.println("ERROR: no se ha encontrado importe alguno en la página.");
 			//ERROR_NO_IMPORTE_ENCONTRADO;
 		}else if(contador!=1){
-			System.out.println("ERROR: se han encontrado más importes ("+m.groupCount()+") de los esperados en la página.");
+			//System.out.println("ERROR: se han encontrado más importes ("+m.groupCount()+") de los esperados en la página.");
 			//ERROR_NO_IMPORTE_ENCONTRADO;
 		}else{
-			System.out.println("Precio ENCONTRADO: "+ precio);
+			//System.out.println("Precio ENCONTRADO: "+ precio);
+		}*/
+		if(contador != 2){
+			throw new ImporteNoEncontradoException(contador);
 		}
 		
 		return precio;
@@ -211,3 +255,35 @@ public class checkYahooMail {
 	}
 	
 }
+
+
+
+class ImporteNoEncontradoException extends Exception{
+	
+	private int numeroImportes;
+	
+	public ImporteNoEncontradoException(int numeroImportes){
+		super();
+		this.numeroImportes= numeroImportes;
+	}
+	
+	public String toString(){
+		if(numeroImportes == 0){
+			return "No se ha podido encontrar el importe en la página.";
+		}else{
+			return "Se han encontrado importes de mas en la página.";
+		}
+	}
+}
+
+class NoVueloException extends Exception{
+		
+	public NoVueloException(){
+		super();
+	}
+	
+	public String toString(){
+		return "No se ha encontrado vuelo.";
+	}
+}
+
