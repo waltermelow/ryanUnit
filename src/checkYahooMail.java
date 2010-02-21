@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import org.w3c.dom.html.HTMLElement;
 
+
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
 import com.gargoylesoftware.htmlunit.Page;
@@ -37,8 +38,37 @@ import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLSelectElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableElement;
 
 public class checkYahooMail {
-
+	
+	
 	public static void main(String[] args) throws Exception {
+		
+		Thread t1= new Thread() {
+			public void run() {
+				try {
+					new checkYahooMail("VLL", "BGY", "03", "2010-04");
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		t1.start();
+		Thread t2= new Thread() {
+		      public void run() {
+		        try {
+		        	new checkYahooMail("VLL", "BGY", "04", "2010-04");
+		        }catch (Exception e) {
+		          e.printStackTrace();
+		        }
+		      }
+		 };
+		 t2.start();
+		
+	}
+
+	
+	
+	
+	public checkYahooMail(String origen, String destino, String dia, String mesAno) throws Exception {
 
 		// Create and initialize WebClient object
 		WebClient webClient = new WebClient(BrowserVersion.FIREFOX_3);
@@ -74,13 +104,13 @@ public class checkYahooMail {
 	    
 	    page= setRadioCheck(page, "AvailabilitySearchInputFRSearchView_OneWay", true);
 	    
-	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1", "VLL");
-	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1", "BGY");
+	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1", origen);
+	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1", destino);
 
-	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDay1", "02");
-	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketMonth1", "2010-04");
-	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDay2", "08");
-	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketMonth2", "2010-04");
+	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDay1", dia);
+	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketMonth1", mesAno);
+	    //setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDay2", "08");
+	    //setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketMonth2", "2010-04");
 
 	    
 	    setCheckboxCheck(page, "AvailabilitySearchInputFRSearchView_DropDownListSearchBy", false);
@@ -145,7 +175,7 @@ public class checkYahooMail {
 	    
 	    String precio= "";
 	    try {
-	    	precio= getPrecioFromHTML(page.asText());
+	    	precio= getPrecioFromHtml(page.asText());
 		} catch (ImporteNoEncontradoException e) {
 			System.out.println( e );
 		} catch (NoVueloException e) {
@@ -160,7 +190,7 @@ public class checkYahooMail {
 	    page.save(f);
 	    
 	    try {
-	    	precio= getPrecioFromHTML(page.asText());
+	    	precio= getPrecioFromHtml(page.asText());
 		} catch (ImporteNoEncontradoException e) {
 			System.out.println( e );
 		} catch (NoVueloException e) {
@@ -196,7 +226,7 @@ public class checkYahooMail {
 		
 	}
 	
-	private static String getPrecioFromHTML(String html) throws ImporteNoEncontradoException, NoVueloException
+	private static String getPrecioFromHtml(String html) throws ImporteNoEncontradoException, NoVueloException
 	{
 		
 		Pattern patVuelo= Pattern.compile("(No hay vuelos|there are no available flights)");
