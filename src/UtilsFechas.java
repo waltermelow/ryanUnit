@@ -16,6 +16,27 @@ public class UtilsFechas {
 	
 	/******************************************************************/
 	/** 
+	 * Convierte Calendar fecha  a --> String tipo "dd" dia
+	 */
+	public static String getFechadd(Calendar fecha){
+		DateFormat df = new SimpleDateFormat("dd");
+		return df.format(fecha.getTime());
+		
+	}
+	
+	
+	/******************************************************************/
+	/** 
+	 * Convierte Calendar fecha  a --> String tipo "MM-yyyy" 
+	 */
+	public static String getFechaMMyyyy(Calendar fecha){
+		DateFormat df = new SimpleDateFormat("MM-yyyy");
+		return df.format(fecha.getTime());
+		
+	}
+	
+	/******************************************************************/
+	/** 
 	 * Convierte Calendar fecha  a --> String tipo "E, dd/MM/yyyy" 
 	 */
 	public static String getFechaEDDMMYYYY(Calendar fecha){

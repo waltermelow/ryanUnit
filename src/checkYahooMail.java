@@ -12,7 +12,11 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.naming.NoInitialContextException;
+
 import org.w3c.dom.html.HTMLElement;
+
+import sun.rmi.runtime.NewThreadAction;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
@@ -39,6 +43,11 @@ import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableElement;
 
 public class checkYahooMail {
 	
+	String origen;
+	String destino;
+	String dia;
+	String mesAno;
+	
 
 	public static void main(String[] args) throws Exception {
 		
@@ -50,7 +59,8 @@ public class checkYahooMail {
 		System.out.println("-- Empieza lectura fichero --");
 		vuelos = UtilsIO.leerFicheroDatosConsultaVuelos(rutaActual + nomFichConsultas);
 		for (Vuelo v : vuelos) {
-			System.out.println(v.toString());
+			System.out.println(v.toString() + "  " + UtilsFechas.getFechadd(v.getFecha()) + " " + UtilsFechas.getFechaMMyyyy(v.getFecha()));
+			lanzarCheckThreaded(v.getOrigen(), v.getDestino(), UtilsFechas.getFechadd(v.getFecha()), UtilsFechas.getFechaMMyyyy(v.getFecha()));
 		}
 		System.out.println("-- Termina lectura fichero --");
 		/*
@@ -75,10 +85,11 @@ public class checkYahooMail {
 		};
 		t2.start();*/
 		
+		/*
 		lanzarCheckThreaded("VLL", "BGY", "03", "2010-04");
 		lanzarCheckThreaded("VLL", "BGY", "04", "2010-04");
 		lanzarCheckThreaded("VLL", "BGY", "05", "2010-04");
-		
+		*/
 	}
 
 	private static String lanzarCheckThreaded(String origen, String destino, String dia, String mesAno) throws Exception {
@@ -86,16 +97,23 @@ public class checkYahooMail {
 		final String d= destino;
 		final String di= dia;
 		final String ma= mesAno;
+		
 		final String retorno= "";
 		Thread t1= new Thread() {
 			public void run() {
 				checkYahooMail cym= null;
+				String precio= "";
 				try {
 					cym = new checkYahooMail(o, d, di, ma);
-					cym.get
+					precio= cym.getPrecio();
+				} catch (ImporteNoEncontradoException e) {
+					precio= "Importe no encontrado";
+				} catch (NoVueloException e) {
+					precio= "NO_VUELO";
 				} catch (Exception e) {
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
+				UtilsIO.stringToFile("C:\\precios.txt", o +" to "+ma+"-"+di+"\t->\t" + precio +"\r\n", true);
 			}
 		};
 		t1.start();
@@ -104,9 +122,15 @@ public class checkYahooMail {
 	}
 	
 	
-	
 	public checkYahooMail(String origen, String destino, String dia, String mesAno) throws Exception {
-
+		this.origen= origen;
+		this.destino =destino;
+		this.dia= dia;
+		this.mesAno= mesAno;
+	}
+	
+	public String getPrecio(/*String origen, String destino, String dia, String mesAno*/) throws Exception {
+		
 		// Create and initialize WebClient object
 		WebClient webClient = new WebClient(BrowserVersion.FIREFOX_3);
 		webClient.setJavaScriptEnabled(true);
@@ -130,14 +154,15 @@ public class checkYahooMail {
 	    //((HtmlSelect) page.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketOrigin1")).getOptionByValue("VLL").setSelected(true); 
 	    //((HtmlSelect) page.getElementById("AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1")).getOptionByValue("BGY").setSelected(true);
 
+	    /*
 	    System.out.println("\n\n\n\n\n");
 	    System.out.println(page.executeJavaScript("" +
 	    		"var aeropuertoAcomprobar= 'VLL';var total='';" +
 	    		"for(var clave in Stations){" +
-	    		"	/*if(clave == aeropuertoAcomprobar)*/ total+= Stations[clave].name + '<|>' + Stations[clave].code + '<|>' + Stations[clave].mkts + '\\n';" +
+	    		"	/*if(clave == aeropuertoAcomprobar)*/ /*total+= Stations[clave].name + '<|>' + Stations[clave].code + '<|>' + Stations[clave].mkts + '\\n';" +
 	    		"} total;" ).getJavaScriptResult()  );
 	    System.out.println("\n\n\n\n\n");
-	    
+	    */
 	    
 	    page= setRadioCheck(page, "AvailabilitySearchInputFRSearchView_OneWay", true);
 	    
@@ -230,8 +255,10 @@ public class checkYahooMail {
 	    	precio= getPrecioFromHtml(page.asText());
 		} catch (ImporteNoEncontradoException e) {
 			System.out.println( e );
+			throw new ImporteNoEncontradoException(e.getNumeroImportes());
 		} catch (NoVueloException e) {
 			System.out.println( e );
+			throw new NoVueloException();
 		}
 		System.out.println(precio);
 		return precio;
@@ -312,8 +339,6 @@ public class checkYahooMail {
 	}
 
 	
-
-	
 }
 
 
@@ -327,6 +352,10 @@ class ImporteNoEncontradoException extends Exception{
 		this.numeroImportes= numeroImportes;
 	}
 	
+	public int getNumeroImportes() {
+		return numeroImportes;
+	}
+
 	public String toString(){
 		if(numeroImportes == 0){
 			return "No se ha podido encontrar el importe en la página.";
