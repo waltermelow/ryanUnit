@@ -59,8 +59,8 @@ public class checkYahooMail {
 		System.out.println("-- Empieza lectura fichero --");
 		vuelos = UtilsIO.leerFicheroDatosConsultaVuelos(rutaActual + nomFichConsultas);
 		for (Vuelo v : vuelos) {
-			System.out.println(v.toString() + "  " + UtilsFechas.getFechadd(v.getFecha()) + " " + UtilsFechas.getFechaMMyyyy(v.getFecha()));
-			lanzarCheckThreaded(v.getOrigen(), v.getDestino(), UtilsFechas.getFechadd(v.getFecha()), UtilsFechas.getFechaMMyyyy(v.getFecha()));
+			System.out.println(v.toString() + "  " + UtilsFechas.getFechadd(v.getFecha()) + " " + UtilsFechas.getFechayyyyMM(v.getFecha()));
+			lanzarCheckThreaded(v.getOrigen(), v.getDestino(), UtilsFechas.getFechadd(v.getFecha()), UtilsFechas.getFechayyyyMM(v.getFecha()));
 		}
 		System.out.println("-- Termina lectura fichero --");
 		/*
@@ -111,7 +111,8 @@ public class checkYahooMail {
 				} catch (NoVueloException e) {
 					precio= "NO_VUELO";
 				} catch (Exception e) {
-					//e.printStackTrace();
+					e.printStackTrace();
+					System.out.println(e.getMessage());
 				}
 				UtilsIO.stringToFile("C:\\precios.txt", o +" to "+ma+"-"+di+"\t->\t" + precio +"\r\n", true);
 			}
@@ -170,6 +171,7 @@ public class checkYahooMail {
 	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDestination1", destino);
 
 	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDay1", dia);
+	    System.out.println("mesAno= "+mesAno);
 	    setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketMonth1", mesAno);
 	    //setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketDay2", "08");
 	    //setComboValue(page, "AvailabilitySearchInputFRSearchView_DropDownListMarketMonth2", "2010-04");

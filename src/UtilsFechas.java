@@ -29,8 +29,8 @@ public class UtilsFechas {
 	/** 
 	 * Convierte Calendar fecha  a --> String tipo "MM-yyyy" 
 	 */
-	public static String getFechaMMyyyy(Calendar fecha){
-		DateFormat df = new SimpleDateFormat("MM-yyyy");
+	public static String getFechayyyyMM(Calendar fecha){
+		DateFormat df = new SimpleDateFormat("yyyy-MM");
 		return df.format(fecha.getTime());
 		
 	}
