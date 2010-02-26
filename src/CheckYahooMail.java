@@ -1,6 +1,3 @@
-
-
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -41,7 +38,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLInputElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLSelectElement;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLTableElement;
 
-public class checkYahooMail {
+public class CheckYahooMail {
 	
 	String origen;
 	String destino;
@@ -50,19 +47,29 @@ public class checkYahooMail {
 	
 
 	public static void main(String[] args) throws Exception {
+		final int NC = 10;
 		
 		final String rutaActual= System.getProperty("user.dir")+"\\src\\";
 		final String nomFichConsultas= "dataConsultas.txt";
 		TreeSet<Vuelo> vuelos;
+		Buffer bufferVuelos = new Buffer(new CircularQueue());
 		
 		System.out.println(rutaActual);
 		System.out.println("-- Empieza lectura fichero --");
 		vuelos = UtilsIO.leerFicheroDatosConsultaVuelos(rutaActual + nomFichConsultas);
+		System.out.println("- - Tam:"+vuelos.size()+"- - ");
 		for (Vuelo v : vuelos) {
 			System.out.println(v.toString() + "  " + UtilsFechas.getFechadd(v.getFecha()) + " " + UtilsFechas.getFechayyyyMM(v.getFecha()));
-			lanzarCheckThreaded(v.getOrigen(), v.getDestino(), UtilsFechas.getFechadd(v.getFecha()), UtilsFechas.getFechayyyyMM(v.getFecha()));
+			//lanzarCheckThreaded(v.getOrigen(), v.getDestino(), UtilsFechas.getFechadd(v.getFecha()), UtilsFechas.getFechayyyyMM(v.getFecha()));
+			bufferVuelos.Put(v);
 		}
 		System.out.println("-- Termina lectura fichero --");
+		
+	    for (int i=0; i < NC; i++){
+	    	new Consumer(bufferVuelos, i).start();
+	    }
+		
+		
 		/*
 		Thread t1= new Thread() {
 			public void run() {
@@ -92,7 +99,7 @@ public class checkYahooMail {
 		*/
 	}
 
-	private static String lanzarCheckThreaded(String origen, String destino, String dia, String mesAno) throws Exception {
+	public static String lanzarCheckThreaded(String origen, String destino, String dia, String mesAno) throws Exception {
 		final String o= origen;
 		final String d= destino;
 		final String di= dia;
@@ -101,10 +108,10 @@ public class checkYahooMail {
 		final String retorno= "";
 		Thread t1= new Thread() {
 			public void run() {
-				checkYahooMail cym= null;
+				CheckYahooMail cym= null;
 				String precio= "";
 				try {
-					cym = new checkYahooMail(o, d, di, ma);
+					cym = new CheckYahooMail(o, d, di, ma);
 					precio= cym.getPrecio();
 				} catch (ImporteNoEncontradoException e) {
 					precio= "Importe no encontrado";
@@ -123,7 +130,7 @@ public class checkYahooMail {
 	}
 	
 	
-	public checkYahooMail(String origen, String destino, String dia, String mesAno) throws Exception {
+	public CheckYahooMail(String origen, String destino, String dia, String mesAno) throws Exception {
 		this.origen= origen;
 		this.destino =destino;
 		this.dia= dia;
@@ -141,7 +148,7 @@ public class checkYahooMail {
 	    webClient.setThrowExceptionOnScriptError(false);
 	    webClient.setRefreshHandler(new RefreshHandler() {
 			public void handleRefresh(Page page, URL url, int arg) throws IOException {
-				System.out.println("handleRefresh");
+				//System.out.println("handleRefresh");
 			}
 
 	    });
@@ -248,7 +255,7 @@ public class checkYahooMail {
 		System.out.println(precio);
 	    
 	    Calendar cal = Calendar.getInstance();
-	    String ruta= "C:\\paginaHTML_"+cal.get(Calendar.HOUR_OF_DAY)+"."+cal.get(Calendar.MINUTE)+"."+cal.get(Calendar.SECOND)+".html";
+	    String ruta= "C:\\@resRyan\\paginaHTML_"+cal.get(Calendar.HOUR_OF_DAY)+"."+cal.get(Calendar.MINUTE)+"."+cal.get(Calendar.SECOND)+".html";
 	    UtilsIO.stringToFile(ruta+".txt", page.asText(), false);
 	    File f= new File(ruta);
 	    page.save(f);
